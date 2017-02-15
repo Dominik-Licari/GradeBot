@@ -13,7 +13,6 @@ public class GradeBot
 	private boolean ignoreSymbolCharacters;
 	private HashMap<String, Integer> searchStrings;
 
-
 	private GradeBot()
 	{
 		sourceCode = null;
@@ -54,8 +53,21 @@ public class GradeBot
 		this.searchStrings = searchStrings;
 	}
 
-	public HashMap<String, Integer> grade()
+	public HashMap<String, String> grade()
 	{
-		return new HashMap<String, Integer>();
+		HashMap<String, String> grades = new HashMap<String, String>();
+		for (File currentFile : sourceCode)
+		{
+
+			Either<Integer, String> result = Grader.grade(currentFile, dataFile, ignoreWhiteSpace, ignoreSymbolCharacters, searchStrings);
+			if (result.getLeft() == -1)
+			{
+				grades.put(currentFile.getAbsolutePath(), result.getRight());
+			} else
+			{
+				grades.put(currentFile.getAbsolutePath(), result.getLeft().toString());
+			}
+		}
+		return grades;
 	}
 }

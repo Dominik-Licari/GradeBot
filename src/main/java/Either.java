@@ -1,7 +1,7 @@
-public class Either<X, Y>
+class Either<X, Y>
 {
-	private X left;
-	private Y right;
+	private final X left;
+	private final Y right;
 
 	public Either(X l, Y r)
 	{

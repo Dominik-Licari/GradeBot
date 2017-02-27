@@ -26,7 +26,7 @@ public class GradeBot
 	/**
 	 * @return The GradeBotInstance
 	 */
-	public GradeBot getInstance()
+	public static GradeBot getInstance()
 	{
 		return instance;
 	}

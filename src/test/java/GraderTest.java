@@ -40,11 +40,11 @@ public class GraderTest
 		testOutOut.close();
 
 		HashMap<String, Integer> testSearchStrings = new HashMap<>();
-		testSearchStrings.put("for\\(*\\)", 1);
-		testSearchStrings.put("While\\(*\\)", 2);
+		testSearchStrings.put("for *\\(.*\\)", 1);
+		testSearchStrings.put("while *\\(.*\\)", 2);
 
 		Either<Integer, String> result = Grader.grade(testSrc, testIn, testOut, false, false, testSearchStrings);
-		//assertEquals(98, result.getLeft().intValue());
+		assertEquals(98, result.getLeft().intValue());
 		assertEquals(null, result.getRight());
 	}
 }

@@ -83,7 +83,7 @@ class Grader
 			{
 				for (Map.Entry<String, Integer> x : searchStrings.entrySet())
 				{
-					String pattern = x.getKey();
+					String pattern = "^[\\W\\w]*" + x.getKey() + "[\\W\\w]*$";
 					Integer value = x.getValue();
 					if (!sourceCode.matches(pattern))
 					{

@@ -20,30 +20,18 @@ class Grader
 			Integer score = 100;
 			InputStream in = System.in;
 			PrintStream out = System.out;
-			String sourceCode = currentFile.toString();
-			String className = null;
-			for (String line : sourceCode.split("\n"))
+			StringBuilder sourceCodeBuild = new StringBuilder();
+			Scanner sourceReader = new Scanner(currentFile);
+			while (sourceReader.hasNextLine())
 			{
-				if (line.contains("public class"))
-				{
-					String[] words = line.split(" ");
-					if (words[2].contains("{"))
-					{
-						className = words[2].substring(0, words[2].length() - 1);
-					} else
-					{
-						className = words[2];
-					}
-					break;
-				}
-			}
-			if (className == null)
-			{
-				return new Either<>(-1, "File at " + currentFile.getAbsolutePath() + " lacks lacks a public class");
+				sourceCodeBuild.append(sourceReader.nextLine());
+				sourceCodeBuild.append("\n");
 			}
 
+			String sourceCode = sourceCodeBuild.toString();
+			String className = currentFile.getName().replaceFirst("[.][^.]+$", "");
 
-			Class<?> currentCodeToBeGraded = InMemoryJavaCompiler.compile(className, currentFile.toString());
+			Class<?> currentCodeToBeGraded = InMemoryJavaCompiler.compile(className, sourceCode);
 			Method mainMethod = currentCodeToBeGraded.getMethod("main", (new String[0]).getClass());
 			InputStream overriddenIn = new FileInputStream(inputFile);
 			File tmp = File.createTempFile("currentOut", null);
@@ -51,8 +39,7 @@ class Grader
 
 			System.setIn(overriddenIn);
 			System.setOut(overriddenOut);
-			//noinspection ConfusingArgumentToVarargsMethod
-			mainMethod.invoke(currentCodeToBeGraded, new String[]{});
+			mainMethod.invoke(currentCodeToBeGraded, (Object) new String[]{});
 			System.setIn(in);
 			System.setOut(out);
 
@@ -112,9 +99,14 @@ class Grader
 			return new Either<>(score, null);
 		} catch (Exception e)
 		{
+			e.printStackTrace();
 			return new Either<>(-1, "Error while compiling file at " + currentFile.getAbsolutePath() + "\nStack trace:\n" + e);
+
+
 		}
 	}
+
+
 }
 
 

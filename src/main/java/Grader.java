@@ -78,25 +78,24 @@ class Grader
 				actualResult = symbolStripper.toString();
 			}
 
-
-			if (actualResult.equals(expectedResult))
+			for (Map.Entry<String, Integer> x : searchStrings.entrySet())
 			{
-				for (Map.Entry<String, Integer> x : searchStrings.entrySet())
+				String pattern = "^[\\W\\w]*" + x.getKey() + "[\\W\\w]*$";
+				Integer value = x.getValue();
+				if (!sourceCode.matches(pattern))
 				{
-					String pattern = "^[\\W\\w]*" + x.getKey() + "[\\W\\w]*$";
-					Integer value = x.getValue();
-					if (!sourceCode.matches(pattern))
-					{
-						score -= value;
-					}
+
+					score -= value;
 				}
-			} else
-			{
-				return new Either<>(-score, "Incorrect output");
 			}
 
-
-			return new Either<>(score, null);
+			if (!actualResult.equals(expectedResult))
+			{
+				return new Either<>(-score, "Incorrect output");
+			} else
+			{
+				return new Either<>(score, null);
+			}
 		} catch (Exception e)
 		{
 			e.printStackTrace();

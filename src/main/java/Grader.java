@@ -101,10 +101,7 @@ class Grader
 			}
 		} catch (Exception e)
 		{
-			e.printStackTrace();
-			return new Either<>(-1, "Error while compiling file at " + currentFile.getAbsolutePath() + "\nStack trace:\n" + e);
-
-
+			return new Either<>(-1, "Error while compiling file");
 		}
 	}
 

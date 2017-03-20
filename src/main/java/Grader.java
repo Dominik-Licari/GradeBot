@@ -33,11 +33,14 @@ class Grader
 
 			Class<?> currentCodeToBeGraded = InMemoryJavaCompiler.compile(className, sourceCode);
 			Method mainMethod = currentCodeToBeGraded.getMethod("main", (new String[0]).getClass());
-			InputStream overriddenIn = new FileInputStream(inputFile);
+
 			File tmp = File.createTempFile("currentOut", null);
 			PrintStream overriddenOut = new PrintStream(tmp);
-
-			System.setIn(overriddenIn);
+			if (inputFile != null)
+			{
+				InputStream overriddenIn = new FileInputStream(inputFile);
+				System.setIn(overriddenIn);
+			}
 			System.setOut(overriddenOut);
 			mainMethod.invoke(currentCodeToBeGraded, (Object) new String[]{});
 			System.setIn(in);

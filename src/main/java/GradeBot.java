@@ -72,7 +72,7 @@ public class GradeBot
 	}
 
 	/**
-	 * @param searchStrings The HashMap of regex strings to match the source code against and their percentage value
+	 * @param searchStrings The HashMap of regex strings to match the source code against and their point value
 	 */
 	public void setSearchStrings(HashMap<String, Integer> searchStrings)
 	{
@@ -92,9 +92,18 @@ public class GradeBot
 		this.searchStrings = realOnes;
 	}
 
+	/**
+	 * @param regex The regex string to match the source code against point value
+	 */
 	public void addRawSearchString(String regex, int value)
 	{
 		this.searchStrings.put(regex, value);
+	}
+
+	public void setLookForForLoop(boolean amILooking, int value)
+	{
+		if (amILooking)
+		{ addRawSearchString("for\\s*\\(.*:.*\\)", value); }
 	}
 
 	/**

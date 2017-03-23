@@ -48,6 +48,13 @@ public class GraderTest
 	}
 
 	@Test
+	public void testSetRawSearchString()
+	{
+		GradeBot test = GradeBot.getInstance();
+		test.setSearchStrings(new HashMap<>());
+		test.addRawSearchString("X", 0);
+	}
+	@Test
 	public void testGradeBot() throws IOException
 	{
 		File testSrc = new File("/home/dominik/TestSrc.java");

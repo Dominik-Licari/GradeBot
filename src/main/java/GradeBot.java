@@ -100,11 +100,6 @@ public class GradeBot
 		this.searchStrings.put(regex, value);
 	}
 
-	public void setLookForForLoop(boolean amILooking, int value)
-	{
-		if (amILooking)
-		{ addRawSearchString("for\\s*\\(.*:.*\\)", value); }
-	}
 
 	/**
 	 * Does the actual work of grading the files
@@ -122,7 +117,7 @@ public class GradeBot
 				grades.put(currentFile.getAbsolutePath(), result.getRight());
 			} else if (result.getLeft() < 0)
 			{
-				grades.put(currentFile.getAbsolutePath(), "The output is incorrect, here's the score based on the source:" + -result.getLeft());
+				grades.put(currentFile.getAbsolutePath(), "Incorrect output, score: " + -result.getLeft());
 			} else
 			{
 				grades.put(currentFile.getAbsolutePath(), result.getLeft().toString());

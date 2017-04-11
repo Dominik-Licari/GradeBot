@@ -1,4 +1,7 @@
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.HashMap;
 
 
@@ -107,10 +110,11 @@ public class GradeBot
 	 */
 	public HashMap<String, String> grade()
 	{
+		PrintStream err = System.err;
+		System.setErr(new PrintStream(new OutputStream() {@Override	public void write(int i) throws IOException	{}}));
 		HashMap<String, String> grades = new HashMap<>();
 		for (File currentFile : sourceCode)
 		{
-
 			Either<Integer, String> result = Grader.grade(currentFile, inputFile, correctOutputFile, ignoreWhiteSpace, ignoreSymbolCharacters, searchStrings);
 			if (result.getLeft() == -1)
 			{
@@ -123,6 +127,7 @@ public class GradeBot
 				grades.put(currentFile.getAbsolutePath(), result.getLeft().toString());
 			}
 		}
+		System.setErr(err);
 		return grades;
 	}
 

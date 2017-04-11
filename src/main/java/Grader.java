@@ -1,25 +1,26 @@
 import org.mdkt.compiler.InMemoryJavaCompiler;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.PrintStream;
+import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.nio.charset.Charset;
+import java.util.*;
+
 
 class Grader
 {
-
 
 	static Either<Integer, String> grade(File currentFile, File inputFile, File correctOutputFile, boolean ignoreWhiteSpace, boolean ignoreSymbolCharacters, HashMap<String, Integer> searchStrings)
 	{
 		try
 		{
+			InputStream sin = System.in;
+			PrintStream sout = System.out;
+
+			ByteArrayOutputStream stream = new ByteArrayOutputStream();
+			PrintStream out = new PrintStream(stream);
+
 			Integer score = 100;
-			InputStream in = System.in;
-			PrintStream out = System.out;
 			StringBuilder sourceCodeBuild = new StringBuilder();
 			Scanner sourceReader = new Scanner(currentFile);
 			while (sourceReader.hasNextLine())
@@ -27,32 +28,35 @@ class Grader
 				sourceCodeBuild.append(sourceReader.nextLine());
 				sourceCodeBuild.append("\n");
 			}
-
+			System.setOut(out);
 			String sourceCode = sourceCodeBuild.toString();
 			String className = currentFile.getName().replaceFirst("[.][^.]+$", "");
-
-			Class<?> currentCodeToBeGraded = InMemoryJavaCompiler.compile(className, sourceCode);
-			Method mainMethod = currentCodeToBeGraded.getMethod("main", (new String[0]).getClass());
-
-			File tmp = File.createTempFile("currentOut", null);
-			PrintStream overriddenOut = new PrintStream(tmp);
+			Class<?> currentCodeToBeGraded;
+			Method mainMethod;
+			try
+			{
+				currentCodeToBeGraded = InMemoryJavaCompiler.compile(className, sourceCode);
+				mainMethod = currentCodeToBeGraded.getMethod("main", (new String[0]).getClass());
+			} catch (Error error)
+			{
+				return new Either<>(0, "Compilation error");
+			}
 			if (inputFile != null)
 			{
-				InputStream overriddenIn = new FileInputStream(inputFile);
-				System.setIn(overriddenIn);
+				StringBuilder inFileBuilder = new StringBuilder();
+				Scanner inFileReader = new Scanner(inputFile);
+				while (inFileReader.hasNextLine())
+				{
+					inFileBuilder.append(inFileReader.nextLine());
+					inFileBuilder.append("\n");
+				}
+				System.setIn(new StringsInputStream(inFileBuilder.toString()));
 			}
-			System.setOut(overriddenOut);
-			mainMethod.invoke(currentCodeToBeGraded, (Object) new String[]{});
-			System.setIn(in);
 			System.setOut(out);
-
-
-			String actualResult;
-			{
-				Scanner tmpOut = new Scanner(tmp);
-				tmpOut.useDelimiter("\\z");
-				actualResult = tmpOut.next();
-			}
+			mainMethod.invoke(currentCodeToBeGraded, (Object) new String[]{});
+			String actualResult = stream.toString(Charset.defaultCharset().toString());
+			System.setOut(sout);
+			System.setIn(sin);
 			String expectedResult;
 			{
 				Scanner tmpOut = new Scanner(correctOutputFile);
@@ -91,7 +95,6 @@ class Grader
 					score -= value;
 				}
 			}
-
 			if (!actualResult.equals(expectedResult))
 			{
 				return new Either<>(-score, "Incorrect output");
@@ -99,13 +102,45 @@ class Grader
 			{
 				return new Either<>(score, null);
 			}
+
 		} catch (Exception e)
 		{
-			return new Either<>(-1, "Error while compiling file");
+			return new Either<>(0, "Compilation error");
 		}
+
 	}
 
+	private static class StringsInputStream extends InputStream
+	{
+		Iterator<Byte> iterator;
 
+		StringsInputStream(String s)
+		{
+			super();
+			ArrayList<Byte> bytes = new ArrayList<>();
+			ArrayList<Character> characters = new ArrayList<Character>();
+			for (char c : s.toCharArray())
+			{
+				characters.add(c);
+			}
+			characters.iterator().forEachRemaining((character ->
+			{
+				bytes.add((byte)((character.charValue() & 0xFF00)>>8));
+				bytes.add((byte)((character.charValue() & 0x00FF)));
+			}));
+			iterator = bytes.iterator();
+		}
+
+		@Override
+		public int read() throws IOException
+		{
+			if (iterator.hasNext())
+			return iterator.next();
+			return 0;
+		}
+	}
 }
+
+
 
 

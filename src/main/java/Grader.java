@@ -1,7 +1,6 @@
 import org.mdkt.compiler.InMemoryJavaCompiler;
 
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.*;

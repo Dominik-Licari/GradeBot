@@ -104,7 +104,7 @@ class Grader
 
 		} catch (Exception e)
 		{
-			e.printStackTrace();
+			System.err.println(Arrays.toString(e.getStackTrace()));
 			return new Either<>(0, "Compilation error");
 		}
 

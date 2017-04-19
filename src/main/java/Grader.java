@@ -96,6 +96,8 @@ class Grader
 			}
 			if (!actualResult.equals(expectedResult))
 			{
+				System.err.println(actualResult);
+				System.err.println(expectedResult);
 				return new Either<>(-score, "Incorrect output");
 			} else
 			{

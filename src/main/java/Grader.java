@@ -72,6 +72,13 @@ class Grader
 					{ whitespaceStripper.append(x); }
 				}
 				actualResult = whitespaceStripper.toString();
+				StringBuilder expectedWhitespaceStripper = new StringBuilder();
+				for (char x : expectedResult.toCharArray())
+				{
+					if (!Character.isWhitespace(x))
+					{ expectedWhitespaceStripper.append(x); }
+				}
+				expectedResult = expectedWhitespaceStripper.toString();
 			}
 			if (ignoreSymbolCharacters)
 			{
@@ -82,6 +89,14 @@ class Grader
 					{ symbolStripper.append(x); }
 				}
 				actualResult = symbolStripper.toString();
+
+				StringBuilder expectedSymbolStripper = new StringBuilder();
+				for (char x : expectedResult.toCharArray())
+				{
+					if (Character.isWhitespace(x) || Character.isLetterOrDigit(x))
+					{ expectedSymbolStripper.append(x); }
+				}
+				expectedResult = expectedSymbolStripper.toString();
 			}
 
 			for (Map.Entry<String, Integer> x : searchStrings.entrySet())

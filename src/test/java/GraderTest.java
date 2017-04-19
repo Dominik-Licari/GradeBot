@@ -15,7 +15,7 @@ public class GraderTest
 	@Test
 	public void testGrade() throws IOException
 	{
-		File testSrc = new File("/home/dominik/TestSrc.java");
+		File testSrc = new File(System.getProperty("java.io.tmpdir") + "/TestSrc.java");
 		BufferedWriter testSrcOut = new BufferedWriter(new FileWriter(testSrc));
 		testSrcOut.write("import java.util.Scanner;\n" +
 				"\n" +

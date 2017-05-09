@@ -1,4 +1,3 @@
-import junit.framework.Assert;
 import org.junit.Test;
 
 import java.io.*;
@@ -6,7 +5,6 @@ import java.util.HashMap;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 
 public class GraderTest
@@ -108,15 +106,15 @@ public class GraderTest
 
 		Either<Integer, String> result = Grader.grade(testSrc, testIn, testOut, false, false, testSearchStrings);
 		System.setErr(err);
-		assertEquals("Compilation error", result.getRight());
+		assertTrue(result.getRight().contains("java.lang.IllegalArgumentException"));
 	}
 
 		@Test
 	public void testGradeBot() throws Exception
 	{
-		File testSrc = new File("/home/dominik/TestSrc.java");
+		File testSrc = new File("/home/dominik/test.java");
 		BufferedWriter testSrcOut = new BufferedWriter(new FileWriter(testSrc));
-		testSrcOut.write("public class TestSrc\n" +
+		testSrcOut.write("public class test\n" +
 				"{\n" +
 				"\tpublic static void main(String... args)\n" +
 				"\t{\n" +
@@ -129,7 +127,7 @@ public class GraderTest
 		testSrcOut.close();
 
 		File testIn = File.createTempFile("TestInput", "txt");
-		testSrc.deleteOnExit();
+
 
 		File testOut = File.createTempFile("TestOutput", "txt");
 		testSrc.deleteOnExit();
@@ -201,9 +199,6 @@ public class GraderTest
 				"}");
 		testSrcOut.close();
 
-		File testIn = File.createTempFile("TestInput", "txt");
-		testSrc.deleteOnExit();
-
 		File testOut = File.createTempFile("TestOutput", "txt");
 		testSrc.deleteOnExit();
 		BufferedWriter testOutOut = new BufferedWriter(new FileWriter(testOut));
@@ -223,4 +218,6 @@ public class GraderTest
 
 		AITA.grade().forEach((String x, String y) -> assertEquals("98", y));
 	}
+
+
 }

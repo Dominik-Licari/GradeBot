@@ -1,5 +1,9 @@
-import org.mdkt.compiler.InMemoryJavaCompiler;
+//import org.mdkt.compiler.InMemoryJavaCompiler;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.tools.*;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
@@ -8,6 +12,7 @@ import java.util.*;
 
 class Grader
 {
+	static Logger log = LoggerFactory.getLogger(Grader.class);
 
 	static Either<Integer, String> grade(File currentFile, File inputFile, File correctOutputFile, boolean ignoreWhiteSpace, boolean ignoreSymbolCharacters, HashMap<String, Integer> searchStrings)
 	{
@@ -20,38 +25,43 @@ class Grader
 			PrintStream out = new PrintStream(stream);
 
 			Integer score = 100;
-			StringBuilder sourceCodeBuild = new StringBuilder();
+
 			Scanner sourceReader = new Scanner(currentFile);
+			StringBuilder sourceCodeBuild = new StringBuilder();
 			while (sourceReader.hasNextLine())
 			{
 				sourceCodeBuild.append(sourceReader.nextLine());
 				sourceCodeBuild.append("\n");
 			}
+
 			System.setOut(out);
+			if (inputFile != null)
+			{
+				InputStream in = new FileInputStream(inputFile);
+				System.setIn(in);
+			}
+
 			String sourceCode = sourceCodeBuild.toString();
 			String className = currentFile.getName().replaceFirst("[.][^.]+$", "");
 			Class<?> currentCodeToBeGraded;
 			Method mainMethod;
 			try
 			{
-				currentCodeToBeGraded = InMemoryJavaCompiler.compile(className, sourceCode);
+				JavaCompiler comp = ToolProvider.getSystemJavaCompiler();
+				DiagnosticCollector<JavaFileObject> diag = new DiagnosticCollector<>();
+				StandardJavaFileManager fm = comp.getStandardFileManager(diag, null, null);
+				Iterable<? extends JavaFileObject> compU = fm.getJavaFileObjects(sourceCode);
+				JavaCompiler.CompilationTask task = comp.getTask(null, fm, diag, null, null, compU);
+				task.call();
+				fm.close();
+				currentCodeToBeGraded = ToolProvider.getSystemToolClassLoader().loadClass(className);
 				mainMethod = currentCodeToBeGraded.getMethod("main", (new String[0]).getClass());
 			} catch (Error error)
 			{
-				return new Either<>(0, "Compilation error");
+				log.error("{}", error.toString());
+				return new Either<>(-1, error.toString());
 			}
-			if (inputFile != null)
-			{
-				StringBuilder inFileBuilder = new StringBuilder();
-				Scanner inFileReader = new Scanner(inputFile);
-				while (inFileReader.hasNextLine())
-				{
-					inFileBuilder.append(inFileReader.nextLine());
-					inFileBuilder.append("\n");
-				}
-				System.setIn(new StringsInputStream(inFileBuilder.toString()));
-			}
-			System.setOut(out);
+
 			mainMethod.invoke(currentCodeToBeGraded, (Object) new String[]{});
 			String actualResult = stream.toString(Charset.defaultCharset().toString());
 			System.setOut(sout);
@@ -111,8 +121,7 @@ class Grader
 			}
 			if (!actualResult.equals(expectedResult))
 			{
-				System.err.println(actualResult);
-				System.err.println(expectedResult);
+				log.debug("expected:\n{}\n\n actual:\n{}", new Object[]{expectedResult, actualResult});
 				return new Either<>(-score, "Incorrect output");
 			} else
 			{
@@ -121,8 +130,8 @@ class Grader
 
 		} catch (Exception e)
 		{
-			System.err.println(Arrays.toString(e.getStackTrace()));
-			return new Either<>(0, "Compilation error");
+			log.error("{}", e.toString());
+			return new Either<>(0, e.toString());
 		}
 
 	}

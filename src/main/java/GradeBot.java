@@ -1,4 +1,6 @@
-import java.io.File;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 
 
@@ -13,7 +15,7 @@ public class GradeBot
 	private boolean ignoreWhiteSpace;
 	private boolean ignoreSymbolCharacters;
 	private HashMap<String, Integer> searchStrings;
-
+	private PrintStream logOut;
 	private GradeBot()
 	{
 		sourceCode = null;
@@ -21,6 +23,20 @@ public class GradeBot
 		ignoreWhiteSpace = false;
 		ignoreSymbolCharacters = false;
 		searchStrings = null;
+		try
+		{
+			logOut = new PrintStream(new FileOutputStream("GradeBotLog"), true);
+		} catch (FileNotFoundException FNF)
+		{
+			try
+			{
+				Files.write(Paths.get("GradeBotLog"), new byte[]{0});
+				logOut = new PrintStream(new FileOutputStream("GradeBotLog"), true);
+			} catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
 	}
 
 	/**
@@ -107,8 +123,8 @@ public class GradeBot
 	 */
 	public HashMap<String, String> grade()
 	{
-		//PrintStream err = System.err;
-		//System.setErr(new PrintStream(new OutputStream() {@Override	public void write(int i) throws IOException	{}}));
+		PrintStream err = System.err;
+		System.setErr(logOut);
 		HashMap<String, String> grades = new HashMap<>();
 		for (File currentFile : sourceCode)
 		{
@@ -124,7 +140,7 @@ public class GradeBot
 				grades.put(currentFile.getAbsolutePath(), result.getLeft().toString());
 			}
 		}
-		//System.setErr(err);
+		System.setErr(err);
 		return grades;
 	}
 
